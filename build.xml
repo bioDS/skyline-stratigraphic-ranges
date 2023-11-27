@@ -1,5 +1,33 @@
 <project default="build" basedir=".">
 
+    <macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<macrodef name = "git-clone-pull">
+    <attribute name = "repository" />
+    <attribute name = "dest" />
+    <sequential>
+        <git command = "clone">
+            <args>
+                <arg value = "@{repository}" />
+                <arg value = "@{dest}" />
+            </args>
+        </git>
+        <git command = "pull" dir = "@{dest}" />
+    </sequential>
+</macrodef>
+
+
     <!-- Source, JUnit test code and jar library locations. -->
     <property name="src" location="src"/>
     <property name="test" location="test"/>
@@ -13,6 +41,8 @@
     <property name="beastLabsDir" location="../BEASTLabs"/>
     <!-- Location to check for local copy of BEASTLabs repository -->
     <property name="saDir" location="../sampled-ancestors"/>
+    <!-- Location to check for local copy of BDSKY repository-->
+    <property name="skyDir" location="../bdsky"/>
 
     <!-- BEAST 2 currently uses Java 17 -->
     <property name="sourceVersion" value="17"/>
@@ -147,6 +177,9 @@
         <property name="build-beastlabs" location="build-beastlabs"/>
         <mkdir dir="${build-beastlabs}"/>
 
+        <!-- <echo>Clone BeastFX.</echo>
+        <git-clone-pull repository="https://github.com/CompEvol/BeastFX.git" dest="BeastFX"/> -->
+
         <get src="https://github.com/beast2-dev/BEASTLabs/archive/master.zip" dest="${build-beastlabs}/beastlabs.zip"/>
         <unzip src="${build-beastlabs}/beastlabs.zip" dest="${build-beastlabs}"/>
         <mkdir dir="${build-beastlabs}/BEASTLabs-master/build"/>
@@ -191,6 +224,58 @@
 
     <target name="build-beastlabs" depends="build-local-beastlabs,build-remote-beastlabs"/>
 
+    <target name="find-sky" depends="init">
+        <available file="${skyDir}" property="localSkyAvailable"/>
+    </target>
+
+    <target name="build-remote-sky" depends="find-sky" unless="localSkyAvailable">
+        <echo>No local copy of the sampled ancestors source found at ${saDir}.</echo>
+        <echo>Compiling against version ${beast-version} from GitHub.</echo>
+
+        <property name="build-sky" location="build-sky"/>
+        <mkdir dir="${build-sky}"/>
+
+             <git-clone-pull repository="https://github.com/BEAST2-Dev/bdsky.git" dest="${build-sky}"/>
+        <!-- <get src="https://github.com/CompEvol/BeastFX/tree/master", dest="${build-sa}/fx.zip"/>
+        <unzip src="${build-sa}/fx.zip" dest="${build-sa}"/> -->
+
+        
+        <mkdir dir="${build-sky}/bdsky/build"/>
+        <javac target="${targetVersion}" source="${sourceVersion}"
+               srcdir="${build-sa}/bdsky/src"
+               destdir="${build-sky}/bdsky/build" includeantruntime="false">
+            <classpath>
+                <fileset dir="${build-sky}/sa/lib" includes="*.jar"/>
+                <fileset dir="${build-lib}" includes="*.jar"/>
+            </classpath>
+        </javac>
+        <jar jarfile="${build-lib}/bdsky.jar" basedir="${build-sky}/bdsky/build" />
+        <copy todir="${build-lib}">
+            <fileset dir="${build-sky}/sky/lib" includes="*.jar"/>
+        </copy>
+
+        <delete dir="${build-sky}" />
+    </target>
+
+    <target name="build-local-sky" depends="find-sky" if="localSkyAvailable">
+        <echo>Compiling against local skyline source found at ${skyDir}.</echo>
+
+        <property name="build-sky" location="build-sky"/>
+        <mkdir dir="${build-sky}"/>
+
+        <javac target="${targetVersion}" source="${sourceVersion}"
+               srcdir="${skyDir}/src"
+               destdir="${build-sky}" includeantruntime="false">
+            <include name="bdsky/**/**" />
+            <classpath>
+                <fileset dir="${build-lib}" includes="*.jar"/>
+            </classpath>
+        </javac>
+        <jar jarfile="${build-lib}/bdsky.jar" basedir="${build-sky}" />
+
+        <delete dir="${build-sky}" />
+    </target>
+
     <target name="find-sa" depends="init">
         <available file="${saDir}" property="localSaAvailable"/>
     </target>
@@ -202,8 +287,13 @@
         <property name="build-sa" location="build-sa"/>
         <mkdir dir="${build-sa}"/>
 
+
         <get src="https://github.com/CompEvol/sampled-ancestors/releases/download/v2.1.0/SA.v2.1.0.zip" dest="${build-sa}/sa.zip"/>
         <unzip src="${build-sa}/sa.zip" dest="${build-sa}"/>
+        <!-- <get src="https://github.com/CompEvol/BeastFX/tree/master", dest="${build-sa}/fx.zip"/>
+        <unzip src="${build-sa}/fx.zip" dest="${build-sa}"/> -->
+
+        
         <mkdir dir="${build-sa}/sa/build"/>
         <javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${build-sa}/sa/src"
@@ -240,10 +330,12 @@
         <delete dir="${build-sa}" />
     </target>
 
+    <target name="build-sky" depends="build-local-sky,build-remote-sky"/>
+
     <target name="build-sa" depends="build-local-sa,build-remote-sa"/>
 
     <!-- Compile -->
-    <target name="compile" depends="build-beast,build-beastlabs,build-sa">
+    <target name="compile" depends="build-beast,build-beastlabs,build-sa,build-sky">
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${src}" destdir="${build}" includeantruntime="false">
             <classpath>
                 <pathelement path=""/>
@@ -357,4 +449,88 @@
         <delete dir="${test-reports}" />
     </target>
 
+
+    <!-- Create skeleton package layout in current directory -->
+    <target name="skeleton">
+
+        <fail>
+            <condition>
+                <or>
+                    <resourcecount when="gt" count="1">
+                        <fileset dir="${basedir}"/>
+                    </resourcecount>
+                    <resourcecount when="gt" count="1">
+                        <dirset dir="${basedir}"/>
+                    </resourcecount>
+                </or>
+            </condition>
+
+            ** This directory contains files besides the build script. **
+            You should run "ant skeleton" in a directory containing only the build script.
+        </fail>
+
+        <echo>===============================</echo>
+        <echo>Create skeleton BEAST 2 package</echo>
+        <echo>===============================</echo>
+        <echo/>
+        <echo>First, we need some information...</echo>
+        <echo/>
+
+        <basename property="defaultProjName" file="${basedir}"/>
+
+        <input addproperty="projName" defaultvalue="${defaultProjName}">Enter package name</input>
+        <input addproperty="license" defaultvalue="gpl3" validargs="gpl3,lgpl3,lgpl2.1,apache2">Select open source software license</input>
+        <input addproperty="projVersion" defaultvalue="1.0.0">Enter package version</input>
+        <input addproperty="beastVersionReq" defaultvalue="2.1.0">Enter minimum required BEAST 2 version</input>
+
+        <echo>Assembling files and directory structure...</echo>
+
+        <echo file="version.xml">&lt;addon name="${projName}" version="${projVersion}"&gt;
+            &lt;depends on="beast2" atleast="${beastVersionReq}"/&gt;
+
+            &lt;!-- Add other dependencies as necessary. --&gt;
+            &lt;/addon&gt;
+        </echo>
+
+        <echo file="README.md" message="README for my package.${line.separator}"/>
+
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/gpl-3.0.txt">
+            <equals arg1="${license}" arg2="gpl3"/>
+        </condition>
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/lgpl-3.0.txt">
+            <equals arg1="${license}" arg2="lgpl3"/>
+        </condition>
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/lgpl-2.1.txt">
+            <equals arg1="${license}" arg2="lgpl2.1"/>
+        </condition>
+        <condition property="licenseURL" value="http://www.apache.org/licenses/LICENSE-2.0.txt">
+            <equals arg1="${license}" arg2="apache2"/>
+        </condition>
+
+        <get src="${licenseURL}" dest="COPYING"/>
+
+        <mkdir dir="${src}"/>
+        <mkdir dir="${test}"/>
+        <mkdir dir="${lib}"/>
+        <mkdir dir="${examples}"/>
+        <mkdir dir="${fxtemplates}"/>
+        <mkdir dir="${doc}"/>
+
+        <echo/>
+        <echo>Done.</echo>
+        <echo/>
+        <echo>The directory structure is as follows:</echo>
+        <echo>${src} - your java source goes here</echo>
+        <echo>${test} - your junit tests go here (You _are_ going to write, those, aren't you!)</echo>
+        <echo>${doc} - your documentation goes here</echo>
+        <echo>${examples} - your example XML scripts go here</echo>
+        <echo>${fxtemplates} - your BEAUti fxtemplates go here</echo>
+        <echo/>
+        <echo>To build your package, just type "ant" at the command line.</echo>
+        <echo/>
+        <echo>To run unit tests, type "ant test".</echo>
+        <echo/>
+        <echo>That's it!  Happy coding!</echo>
+
+    </target>
 </project>
