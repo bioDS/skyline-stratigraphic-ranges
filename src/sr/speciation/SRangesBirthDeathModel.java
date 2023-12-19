@@ -9,6 +9,8 @@ import sa.evolution.speciation.SABirthDeathModel;
 import sr.evolution.tree.SRTree;
 import sr.evolution.sranges.StratigraphicRange;
 
+import bdsky.Skyline;
+
 /**
  * @author Alexandra Gavryushkina
  * @author Ugne Stolz
@@ -160,4 +162,3 @@ public class SRangesBirthDeathModel extends SABirthDeathModel {
     }
 
 }
-

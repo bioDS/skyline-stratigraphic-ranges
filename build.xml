@@ -1,5 +1,7 @@
 <project default="build" basedir=".">
 
+<!-- Git code to pull from https://stackoverflow.com/questions/27442136/how-to-do-git-pull-through-build-xml-ant-task-->
+
     <macrodef name = "git">
     <attribute name = "command" />
     <attribute name = "dir" default = "" />
@@ -235,11 +237,7 @@
         <property name="build-sky" location="build-sky"/>
         <mkdir dir="${build-sky}"/>
 
-             <git-clone-pull repository="https://github.com/BEAST2-Dev/bdsky.git" dest="${build-sky}"/>
-        <!-- <get src="https://github.com/CompEvol/BeastFX/tree/master", dest="${build-sa}/fx.zip"/>
-        <unzip src="${build-sa}/fx.zip" dest="${build-sa}"/> -->
-
-        
+             <git-clone-pull repository="https://github.com/BEAST2-Dev/bdsky.git" dest="${build-sky}"/>        
         <mkdir dir="${build-sky}/bdsky/build"/>
         <javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${build-sa}/bdsky/src"
@@ -290,10 +288,6 @@
 
         <get src="https://github.com/CompEvol/sampled-ancestors/releases/download/v2.1.0/SA.v2.1.0.zip" dest="${build-sa}/sa.zip"/>
         <unzip src="${build-sa}/sa.zip" dest="${build-sa}"/>
-        <!-- <get src="https://github.com/CompEvol/BeastFX/tree/master", dest="${build-sa}/fx.zip"/>
-        <unzip src="${build-sa}/fx.zip" dest="${build-sa}"/> -->
-
-        
         <mkdir dir="${build-sa}/sa/build"/>
         <javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${build-sa}/sa/src"
