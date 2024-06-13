@@ -49,6 +49,8 @@ public class SRangesBirthDeathModelTest extends TestCase {
         tree.assignFrom(tree_initial);
 
         SRangesBirthDeathModel model = new SRangesBirthDeathModel();
+        StratigraphicRange strat_range = new StratigraphicRange();
+
         model.setInputValue("tree", tree);
         model.setInputValue("origin", new RealParameter("7.0"));
         model.setInputValue("birthRate", new RealParameter("1.5"));

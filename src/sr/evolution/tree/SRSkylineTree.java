@@ -1,5 +1,6 @@
 package sr.evolution.tree;
 
+import bdsky.MultiSkyline;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
@@ -8,7 +9,6 @@ import beast.base.evolution.tree.TreeParser;
 import beast.base.inference.StateNode;
 import sr.evolution.sranges.StratigraphicRange;
 
-import sr.util.Tools;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,20 +16,23 @@ import java.util.List;
 /**
  * @author Alexandra Gavryushkina
  * @author Ugne Stolz
- * A labeled oriented tree on stratigraphic ranges under budding speciation.
+ * @author Kate Truman
+ * A labeled oriented tree on stratigraphic ranges under budding speciation for a skyline model.
  * At every internal node contains metadata on its orientation.
  * Branch leading to the left child represents the ancestral species
  * and the branch leading to the right child represents the descendant species.
  * Sampled ancestors are always attached from left, with the appropriate metadata recorded.
  */
-public class SRTree extends Tree implements TreeInterface {
+public class SRSkylineTree extends SRTree {
 
     public Input<List<StratigraphicRange>> stratigraphicRangeInput = new Input<>("stratigraphicRange", "all stratigraphic ranges", new ArrayList<>());
-
+    public Input<List<MultiSkyline>> skylineInput = new Input<>("skyline", "all skylines", new ArrayList<>());
     public Input<Tree> treeInput = new Input<>("tree", "tree to start with");
 
     protected ArrayList<StratigraphicRange> sRanges;
     protected ArrayList<StratigraphicRange> storedSRanges;
+    protected ArrayList<MultiSkyline> skylines;
+    protected ArrayList<MultiSkyline> storedSkylines;
 
     /**
      * Initializes and validates the object, assigns the tree if provided,
@@ -357,6 +360,10 @@ public class SRTree extends Tree implements TreeInterface {
         ArrayList<StratigraphicRange> tmp_ranges = storedSRanges;
         storedSRanges = sRanges;
         sRanges=tmp_ranges;
+
+        ArrayList<MultiSkyline> tmp_skylines = storedSkylines;
+        storedSkylines = skylines;
+        skylines=tmp_skylines;
     }
 
     /**
@@ -373,6 +380,9 @@ public class SRTree extends Tree implements TreeInterface {
     public ArrayList<StratigraphicRange> getSRanges() {
         return  sRanges;
     }
+
+    public ArrayList<MultiSkyline> getSkylines(){ return skylines;}
+
     public Integer getNonSingleSRangeCount() {
         int count = 0;
         for (StratigraphicRange range: sRanges) {
@@ -506,7 +516,7 @@ public class SRTree extends Tree implements TreeInterface {
      */
     @Override
     public void log(long sample, PrintStream out) {
-        SRTree tree = (SRTree) getCurrent();
+        SRSkylineTree tree = (SRSkylineTree) getCurrent();
         out.print("tree STATE_" + sample + " = ");
         // Don't sort, this can confuse CalculationNodes relying on the tree
         //tree.getRoot().sort();
