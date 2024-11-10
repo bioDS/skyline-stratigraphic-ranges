@@ -38,7 +38,10 @@
     <!-- Location to check for local copy of beast2 repository -->
     <property name="beastDir" location="../beast2"/>
     <property name="BeastFXDir" location="../BeastFX"/>
+<<<<<<< HEAD
     <property name="srDir" location="../stratigraphic-ranges"/>
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
 
     <!-- Location to check for local copy of BEASTLabs repository -->
     <property name="beastLabsDir" location="../BEASTLabs"/>
@@ -46,8 +49,11 @@
     <property name="saDir" location="../sampled-ancestors"/>
     <!-- Location to check for local copy of BDSKY repository-->
     <property name="skyDir" location="../bdsky"/>
+<<<<<<< HEAD
     <property name="nasDir" location="../nashorn"/>
 
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
 
     <!-- BEAST 2 currently uses Java 17 -->
     <property name="sourceVersion" value="17"/>
@@ -60,7 +66,11 @@
 
     <!-- BEAST branch and version to build against
          (only different for version tags because of
+<<<<<<< HEAD
          a GitHub peculiarity) -->
+=======
+         a Github peculiarity) -->
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
     <property name="beast-branch" value="master"/>
     <property name="beast-version" value="master"/>
 
@@ -85,9 +95,14 @@
 
         <!-- Read package name and version from xml file -->
         <xmlproperty file="version.xml" prefix="fromVersionFile" />
+<<<<<<< HEAD
         <property name="projName" value="SRanges" />
         <!--${fromVersionFile.package(name)} ${fromVersionFile.package(version)} -->
         <property name="projVersion" value="0.03" />
+=======
+        <property name="projName" value="${fromVersionFile.package(name)}" />
+        <property name="projVersion" value="${fromVersionFile.package(version)}" />
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
 
         <mkdir dir="${build}"/>
         <mkdir dir="${build-lib}"/>
@@ -111,9 +126,12 @@
         <property name="build-beast" location="build-beast"/>
         <mkdir dir="${build-beast}"/>
 
+<<<<<<< HEAD
         <!--<property name="build-nas" location="build-nas"/>
         <mkdir dir="${build-nas}"/>-->
 
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
         <get src="https://github.com/CompEvol/beast2/archive/${beast-branch}.zip" dest="${build-beast}/beast.zip"/>
         <unzip src="${build-beast}/beast.zip" dest="${build-beast}"/>
         <mkdir dir="${build-beast}/beast2-${beast-version}/build"/>
@@ -129,6 +147,7 @@
             <fileset dir="${build-beast}/beast2-${beast-version}/lib" includes="*.jar"/>
         </copy>
 
+<<<<<<< HEAD
         <!--<javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${nasDir}"
                destdir="${build-nas}" includeantruntime="false">
@@ -139,6 +158,8 @@
         </javac>
         <jar jarfile="${build-lib}/nashorn.jar" basedir="${build-nas}" />-->
 
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
         <delete dir="${build-beast}" />
 
     </target>
@@ -254,11 +275,18 @@
         <property name="build-sky" location="build-sky"/>
         <mkdir dir="${build-sky}"/>
 
+<<<<<<< HEAD
 
              <git-clone-pull repository="https://github.com/BEAST2-Dev/bdsky.git" dest="${build-sky}"/>        
         <mkdir dir="${build-sky}/bdsky/build"/>
         <javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${build-sky}/bdsky/src"
+=======
+             <git-clone-pull repository="https://github.com/BEAST2-Dev/bdsky.git" dest="${build-sky}"/>        
+        <mkdir dir="${build-sky}/bdsky/build"/>
+        <javac target="${targetVersion}" source="${sourceVersion}"
+               srcdir="${build-sa}/bdsky/src"
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
                destdir="${build-sky}/bdsky/build" includeantruntime="false">
             <classpath>
                 <fileset dir="${build-sky}/sa/lib" includes="*.jar"/>
@@ -285,8 +313,11 @@
             <include name="bdsky/**/**" />
             <classpath>
                 <fileset dir="${build-lib}" includes="*.jar"/>
+<<<<<<< HEAD
                 <fileset dir="../bdsky/lib" includes="*.jar"/>
 
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
             </classpath>
         </javac>
         <jar jarfile="${build-lib}/bdsky.jar" basedir="${build-sky}" />
@@ -344,6 +375,7 @@
         <delete dir="${build-sa}" />
     </target>
 
+<<<<<<< HEAD
     <target name="find-sr" depends="init">
         <available file="${srDir}" property="localSrAvailable"/>
     </target>
@@ -393,15 +425,22 @@
         <delete dir="${build-sr}" />
     </target>
 
+=======
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
     <target name="build-sky" depends="build-local-sky,build-remote-sky"/>
 
     <target name="build-sa" depends="build-local-sa,build-remote-sa"/>
 
+<<<<<<< HEAD
     <target name="build-sr" depends="build-local-sr,build-remote-sr"/>
 
 
     <!-- Compile -->
     <target name="compile" depends="build-beast,build-beastlabs,build-sa,build-sky,build-sr">
+=======
+    <!-- Compile -->
+    <target name="compile" depends="build-beast,build-beastlabs,build-sa,build-sky">
+>>>>>>> de5d29a8b96de748a93523b2a8657fc90a7712c1
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${src}" destdir="${build}" includeantruntime="false">
             <classpath>
                 <pathelement path=""/>
