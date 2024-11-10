@@ -11,6 +11,9 @@
 - [License](#license)
 
 ## Building
+
+See the [IntelliJ-setup](IntelliJ-setup) folder for screenshots on IntelliJ module dependencies.
+
 The following Beast2 packages are required as dependencies:
 - [beast2](https://github.com/CompEvol/beast2)
 - [beastFX](https://github.com/CompEvol/BeastFX)
