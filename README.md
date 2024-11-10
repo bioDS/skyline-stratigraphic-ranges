@@ -10,7 +10,19 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## Introduction
+## Building
+The following Beast2 packages are required as dependencies:
+- [beast2](https://github.com/CompEvol/beast2)
+- [beastFX](https://github.com/CompEvol/BeastFX)
+- [beastLabs](https://github.com/BEAST2-Dev/BEASTLabs) 
+- [bdsky](https://github.com/BEAST2-Dev/bdsky)
+- [sampledancestors](https://github.com/CompEvol/sampled-ancestors) 
+- [stratigraphic-ranges](https://github.com/jugne/stratigraphic-ranges)
+
+Use `ant` to build packages in the following order: beast2, bdsky and beastLabs. 
+Then use `ant package` to build BeastFX, and `ant` to build the remaining dependencies (sampledancestors and stratigraphic-ranges).
+
+## Introduction - sRanges
 
 sRanges is a BEAST2.7 package for performing phylodynamic inference under the birth-death stratigraphic ranges model. Depending on data interpretation it can be used for both macroevolution and epidemiology.
 
