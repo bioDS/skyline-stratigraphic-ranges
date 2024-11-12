@@ -12,6 +12,7 @@ import sr.evolution.tree.SRTree;
 
 import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,7 +29,9 @@ import java.util.List;
         "Bayesian total-evidence dating under the fossilized birth-death model with stratigraphic ranges.")
 public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
-//    protected BirthDeathSkylineModel skyline = new BirthDeathSkylineModel();
+//    // the interval times
+//    public Input<RealParameter> timesInput =
+//            new Input<RealParameter>("times", "The times t_i specifying when diversification rate changes occur", (RealParameter) null);
 
     
 
@@ -49,21 +52,15 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //    public Input<List<RealParameter>> samplingProportionInput = new Input<List<RealParameter>>("samplingProportions",
 //            "The probability of sampling prior to death. Sampling rate /(sampling rate + death rate)", Input.Validate.XOR, samplingRateInput);
 
-    // Replace constant values from parent class.
-//    protected Double[] lambda;
-//    protected Double[] mu;
-//    protected Double[] psi;
     protected Double[] p;
     protected Double[] q;
-    // TO DO: Number of skyline intervals, need to change this.
-    protected int l = 10;
+    // Number of skyline intervals
+    protected int l;
     protected Boolean birthExceedsDeath[] = new Boolean[l];
+//    protected List<Double> times = new ArrayList<Double>();
+    Boolean timesRelative = false;
 
-    // To remove 'cannot find' errors, need to update this TODO
-//    protected Double[] birth;
-//    protected Double[] sampling;
-//    protected Double[] death;
-//    protected Double[] time;
+
 
 
     // protected List<Boolean> birthExceedsDeath = new ArrayList<Boolean>();
@@ -79,15 +76,45 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //        }
 //    }
 
+    //TODO: what needs adding to this?
+    public void initAndValidate() {
+        int timeInputs = 0;
+        if (intervalTimes.get() != null) {
+            timeInputs += 1;
+        }
+        if (birthRateChangeTimesInput.get() != null) {
+            timeInputs += 1;
+            intervalTimes = birthRateChangeTimesInput;
+        }
+        if (deathRateChangeTimesInput.get() != null) {
+            timeInputs += 1;
+            intervalTimes = deathRateChangeTimesInput;
+
+        }
+        if (samplingRateChangeTimesInput.get() != null) {
+            timeInputs += 1;
+            intervalTimes = samplingRateChangeTimesInput;
+        }
+        if (removalProbabilityChangeTimesInput.get() != null) {
+            timeInputs += 1;
+            intervalTimes = removalProbabilityChangeTimesInput;
+        }
+
+        if (timeInputs > 1){
+            throw new RuntimeException("More than one set of diversification rate change times specified." +
+                    "Please specify only the overall time intervals, or either the birth, death, sampling or removal probability change times" +
+                    "as a proxy for this.");
+        }
+        super.initAndValidate();
+
+    }
+
 
     
     public void birthExceedsDeath() {
-        for (int i = 0; i < birthExceedsDeath.length; i++) {
-            birthExceedsDeath[i] = false;
-        }
+        Arrays.fill(birthExceedsDeath, false);
     }
-    //KT interim: Should these be public or protected? Protected in SABirthDeathModel, public in BDSkylineModel.
-    // KT interim: Correct in skyline
+
     public double Ai(int index){
         return Ai(birth[index], death[index], psi[index]);
     }
@@ -98,20 +125,11 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //        return (1 - 2(1 - p[index]))/Ai(index);
     }
 
-    //KT interim: check permissions of method.
-    public int findIndex(double t){
-        for(int i = 0; i < l; i++){
-            if(times[i] > t){
-                return i;
-            }
-        }
-        return -1;
-    }
 
     //KT interim: Correct in skyline
     //KT interim: Are the time indices off by one?
     public double q(double t) {
-        int index = findIndex(t);
+        int index = index(t);
         return q(t, Ai(index), Bi(index));
     }
 
@@ -120,37 +138,35 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return 4 * v / Math.pow(v*(1-Bi) + (1+Bi), 2.0);
     }
 
-    //KT interim: Correct in skyline
     //KT interim: Are the time indices off by one?
     public double log_q(double t) {
-        int index = findIndex(t);
+        int index = index(t);
         return log_q(index, times[index], t);
     }
 
-    //KT interim: Correct
     public double q_tilde(double t){
-        int index = findIndex(t);
+        int index = index(t);
         return Math.sqrt(q[index]*Math.exp(-(birth[index]+death[index]+psi[index]))*(t - times[index]));
     }
 
     public double log_q_tilde(double t){
-        int index = findIndex(t);
+        int index = index(t);
         return 0.5*(log_q(t)-(birth[index]+death[index]+psi[index])*(t-times[index]));
     }
 
     public double p(double t) {
-        int index = findIndex(t);
+        int index = index(t);
         return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t);
     }
 
     //KT: equation from FBD skyline document
     public double p(double birth, double death, double psi, double A, double B, double t){
-        int index = findIndex(t);
+        int index = index(t);
         return (birth + death + psi - A*((1+ B)-(1-B)*Math.exp(-A*(t - times[index])))/((1+ B)-(1-B)*Math.exp(-A*(t - times[index])))/2*birth);
     }
 
     public double log_p0s(double t) {
-        int index = findIndex(t);
+        int index = index(t);
         return log_p0s(t, Ai(index), Bi(index), index);
     }
 
@@ -243,7 +259,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
             double height = node.getHeight();
             Node parent = node.getParent();
             double parent_height = -1;
-            int node_index = findIndex(height);
+            int node_index = index(height);
             int sub_parent = 0;
             double skyline_parent = -1;
             if(!node.isRoot()){
@@ -301,7 +317,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
         for (StratigraphicRange range:((SRTree)tree).getSRanges()) {
             Node first =  tree.getNode(range.getNodeNrs().get(0));
-            int node_index = findIndex(first.getHeight());
+            int node_index = index(first.getHeight());
             if (!range.isSingleFossilRange()) {
                 double tFirst =first.getHeight();
                 double tLast = tree.getNode(range.getNodeNrs().get(range.getNodeNrs().size()-1)).getHeight();
