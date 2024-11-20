@@ -228,14 +228,14 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         }
 
         if (!conditionOnRootInput.get()){
-            logP = log_q(x0);
+            logP += log_q(x0);
         } else {
             if (tree.getRoot().isFake()){   //when conditioning on the root we assume the process
                 //starts at the time of the first branching event and
                 //that means that the root can not be a sampled ancestor
                 return Double.NEGATIVE_INFINITY;
             } else {
-                logP = log_q(x1);
+                logP += log_q(x1);
             }
         }
 
@@ -262,74 +262,116 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
             int node_index = index(height);
             int sub_parent = 0;
             double skyline_parent = -1;
-            if(!node.isRoot()){
-                parent_height = parent.getHeight();
-                skyline_parent = parent_height;
-                // < or <=? how do we treat nodes on time border?
-                // TODO: is node index the correct index here?
-                if (times[node_index-1] < parent_height && times[node_index-1] > height){
-                    sub_parent = 1;
-                    skyline_parent = times[node_index-1];
-                }
-                //TO DO: if stratigraphic range branch
-                //KT interim: is this in the right place? easier to check inside SR block?
-                if(true){
-                logP += log_q(skyline_parent)-log_q(height);
-                }
-                else{
-                logP += log_q_tilde(skyline_parent)-log_q_tilde(height);
-                }
+            if (node.getChildCount() == 2){
+                logP += birth[node_index];
             }
-
-            if (node.isLeaf()) {
-                if  (!node.isDirectAncestor())  {
-                    Node fossilParent = node.getParent();
-                    if (node.getHeight() > 0.000000000005 || rho[node_index] == 0.) {
-                            //SR y_i
-                        if (((SRTree)tree).belongToSameSRange(i, fossilParent.getNr())) {
-                            logP += Math.log(psi[node_index]) - log_q_tilde(node.getHeight()) + log_p0s(node.getHeight());
-                        } else {
-                            // SR o_i
-                            logP += Math.log(psi[node_index]) - log_q(node.getHeight()) + log_p0s(node.getHeight());
+            else {
+                if(!node.isFake()){
+                    parent_height = parent.getHeight();
+                    skyline_parent = parent_height;
+                    if (times[node_index-1] < parent_height && times[node_index-1] > height){
+                        skyline_parent = times[node_index-1];
+                    }
+                    // Not SR branch
+                    // TODO: are q_tilde and q the right way around for time intervals?
+                    if(tree.getRangeOfNode(node) == null){
+                        logP += log_q(parent_height)-log_q(height);
+                        if (skyline_parent != parent_height){
+                            logP += Math.log(q(skyline_parent));
                         }
-                    } else {
-                        logP += Math.log(rho[node_index]); //chi_i ln(rho) term
+                    }
+                    else{
+                        logP += log_q_tilde(parent_height)-log_q_tilde(height);
+                        if (skyline_parent != parent_height){
+                            logP += Math.log(q_tilde(skyline_parent));
+                        }
                     }
                 }
-            } else {
-                if (node.isFake()) {
-                    logP += Math.log(psi[node_index]);
-                    parent = node.getParent();
-                    Node child = node.getNonDirectAncestorChild();
-                    Node DAchild = node.getDirectAncestorChild();
-                    if (parent != null && ((SRTree)tree).belongToSameSRange(parent.getNr(),DAchild.getNr())) {
-                        logP += - log_q_tilde(node.getHeight()) + log_q(node.getHeight());
-                    }
-                    if (child != null && ((SRTree)tree).belongToSameSRange(i,child.getNr())) {
-                        logP += - log_q(node.getHeight()) +  log_q_tilde(node.getHeight());
+
+                if (node.isLeaf()) {
+                    if  (!node.isDirectAncestor())  {
+                        Node fossilParent = node.getParent();
+                        if (node.getHeight() > 0.000000000005 || rho[node_index] == 0.) {
+                            logP += Math.log(p(height));
+    //                            //SR y_i
+
+    //                        if (((SRTree)tree).belongToSameSRange(i, fossilParent.getNr())) {
+    //                            logP += Math.log(psi[node_index]) - log_q_tilde(node.getHeight()) + log_p0s(node.getHeight());
+    //                        } else {
+    //                            // SR o_i
+    //                            logP += Math.log(psi[node_index]) - log_q(node.getHeight()) + log_p0s(node.getHeight());
+    //                        }
+                        } else {
+                            logP += Math.log(rho[node_index]); //chi_i ln(rho) term
+                        }
                     }
                 } else {
-                    logP += Math.log(birth[node_index]) + log_q(node.getHeight());
+                    if (node.isFake()) {
+    //                    logP += Math.log(psi[node_index]);
+                        parent = node.getParent();
+    //                    Node child = node.getNonDirectAncestorChild();
+    //                    Node DAchild = node.getDirectAncestorChild();
+    //                    if (parent != null && ((SRTree)tree).belongToSameSRange(parent.getNr(),DAchild.getNr())) {
+    //                        logP += - log_q_tilde(node.getHeight()) + log_q(node.getHeight());
+    //                    }
+    //                    if (child != null && ((SRTree)tree).belongToSameSRange(i,child.getNr())) {
+    //                        logP += - log_q(node.getHeight()) +  log_q_tilde(node.getHeight());
+    //                    }
+                    } else {
+                        // speciation event
+    //                    logP += Math.log(birth[node_index]) + log_q(node.getHeight());
+                        logP += Math.log(birth[node_index]);
+                    }
                 }
             }
-        }
 
-        // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
-        for (StratigraphicRange range:((SRTree)tree).getSRanges()) {
-            Node first =  tree.getNode(range.getNodeNrs().get(0));
-            int node_index = index(first.getHeight());
-            if (!range.isSingleFossilRange()) {
-                double tFirst =first.getHeight();
-                double tLast = tree.getNode(range.getNodeNrs().get(range.getNodeNrs().size()-1)).getHeight();
-                logP += psi[node_index]*(tFirst - tLast);
+            // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
+            for (StratigraphicRange range:((SRTree)tree).getSRanges()) {
+                Node first =  tree.getNode(range.getNodeNrs().get(0));
+                List<Integer> fossils = range.getNodeNrs()
+                int first_node_index = index(first.getHeight());
+                logP += Math.log(psi[index(first.getHeight())]);
+                if (fossils.size() != 1) {
+                    logP += Math.log(psi[index(tree.getNode(fossils.get(fossils.size()) - 1).getHeight())]);
+                }
+
             }
-            Node ancestralLast = findAncestralRangeLastNode(first);
-            if (ancestralLast != null) {
-                double tOld = ancestralLast.getHeight();
-                double tYoung = first.getHeight();
-                logP += Math.log(1-q(tYoung)/q_tilde(tYoung)*q_tilde(tOld)/q(tOld));
-            }
-        }
+                if (!range.isSingleFossilRange()) {
+                    double tFirst =first.getHeight();
+                    double tLast = tree.getNode(range.getNodeNrs().get(range.getNodeNrs().size()-1)).getHeight();
+                    int last_node_index = index(tLast);
+                    if (first_node_index == last_node_index) {
+                        logP += psi[first_node_index] * (tFirst - tLast);
+                    }
+                    else {
+                        logP += psi[first_node_index] * (tFirst - times[first_node_index]);
+                        logP += psi[last_node_index] * (times[last_node_index] -tLast);
+                        for (int j = first_node_index + 1; j < last_node_index; j++) {
+                            logP += psi[j]*(times[j-1] -times[j]);
+    //                        logP += Math.log(q(times[j-1]));
+                        }
+                    }
+                }
+                Node ancestralLast = findAncestralRangeLastNode(first);
+                // SR i is in I, i and a(i) are in the same vertical line in the graphical representation.
+                 if (ancestralLast != null) {
+                     double tOld = ancestralLast.getHeight();
+                     double tYoung = first.getHeight();
+                     int oldIndex = index(tOld);
+                     int youngIndex = index(tYoung);
+                     double qsum;
+                     if (oldIndex == youngIndex) {
+                         logP += Math.log(1 - q(tYoung) / q_tilde(tYoung) * q_tilde(tOld) / q(tOld));
+                     } else {
+                         qsum = 1 - q(times[oldIndex]) / q(tOld) * q_tilde(tOld) / q_tilde(times[oldIndex]);
+                         qsum += 1 - q(youngIndex) / q(times[youngIndex]) * q_tilde(times[youngIndex - 1]) * q_tilde(times[youngIndex - 1]) / q_tilde(youngIndex);
+                         for (int j = oldIndex + 1; j < youngIndex; j++) {
+                             qsum += 1 - q(times[j]) / q(times[j - 1]) * q_tilde(times[j - 1] / q_tilde(times[j]));
+                         }
+                         logP += Math.log(qsum);
+                     }
+                 }
+             }
         return logP;
     }
 

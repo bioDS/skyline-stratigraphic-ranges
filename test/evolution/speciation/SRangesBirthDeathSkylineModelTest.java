@@ -7,8 +7,9 @@ import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
 import junit.framework.TestCase;
 import org.junit.Test;
-import sr.speciation.SRangesBirthDeathModel;
 import sr.evolution.sranges.StratigraphicRange;
+import sr.speciation.SRangesBirthDeathSkylineModel;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +17,7 @@ import java.util.Arrays;
 /**
  * Created by gavryusa on 24/07/17.
  */
-public class SRangesBirthDeathModelTest extends TestCase {
+public class SRangesBirthDeathSkylineModelTest extends TestCase {
 
     @Test
     public void testLikelihood() throws Exception {
@@ -48,7 +49,7 @@ public class SRangesBirthDeathModelTest extends TestCase {
         tree.setInputValue("stratigraphicRange", sranges);
         tree.assignFrom(tree_initial);
 
-        SRangesBirthDeathModel model = new SRangesBirthDeathModel();
+        SRangesBirthDeathSkylineModel model = new SRangesBirthDeathSkylineModel();
         StratigraphicRange strat_range = new StratigraphicRange();
 
         model.setInputValue("tree", tree);
