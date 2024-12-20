@@ -25,7 +25,6 @@ import sr.evolution.sranges.StratigraphicRange;
 import sr.evolution.tree.RandomSRangeTree;
 import sr.evolution.tree.SRNode;
 import sr.evolution.tree.SRTree;
-import sr.speciation.SRangesBirthDeathModel;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import sr.speciation.SRangesBirthDeathSkylineModel;
 
 public class OrientationTest {
 	double tolerance = 0.005;
@@ -103,7 +103,7 @@ public class OrientationTest {
 
 		// dist 1
 		CompoundDistribution prior = new CompoundDistribution();
-		SRangesBirthDeathModel model = new SRangesBirthDeathModel();
+		SRangesBirthDeathSkylineModel model = new SRangesBirthDeathSkylineModel();
 		Prior priorDist = new Prior();
 		Uniform uniform3 = new Uniform();
 
@@ -304,7 +304,7 @@ public class OrientationTest {
 
 		// dist 1
 		CompoundDistribution prior = new CompoundDistribution();
-		SRangesBirthDeathModel model = new SRangesBirthDeathModel();
+		SRangesBirthDeathSkylineModel model = new SRangesBirthDeathSkylineModel();
 		Prior priorDist = new Prior();
 		Uniform uniform3 = new Uniform();
 
@@ -502,7 +502,7 @@ public class OrientationTest {
 
 		// dist 1
 		CompoundDistribution prior = new CompoundDistribution();
-		SRangesBirthDeathModel model = new SRangesBirthDeathModel();
+		SRangesBirthDeathSkylineModel model = new SRangesBirthDeathSkylineModel();
 		Prior priorDist = new Prior();
 		Uniform uniform3 = new Uniform();
 

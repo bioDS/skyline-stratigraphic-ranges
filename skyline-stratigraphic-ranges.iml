@@ -8,7 +8,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="build-lib2" level="project" />
     <orderEntry type="module" module-name="bdsky" exported="" />
     <orderEntry type="module" module-name="beast2" exported="" />
     <orderEntry type="module" module-name="BeastFX" exported="" />
