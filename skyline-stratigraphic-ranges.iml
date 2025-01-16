@@ -8,12 +8,13 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="build-lib2" level="project" />
     <orderEntry type="module" module-name="bdsky" exported="" />
     <orderEntry type="module" module-name="beast2" exported="" />
     <orderEntry type="module" module-name="BeastFX" exported="" />
     <orderEntry type="module" module-name="BEASTLabs" exported="" />
     <orderEntry type="module" module-name="sampled-ancestors" exported="" />
     <orderEntry type="module" module-name="stratigraphic-ranges" exported="" />
+    <orderEntry type="module" module-name="feast" exported="" />
+    <orderEntry type="module" module-name="morph-models" exported="" />
   </component>
 </module>
