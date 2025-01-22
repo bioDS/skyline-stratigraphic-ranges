@@ -27,7 +27,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //    public Input<RealParameter> timesInput =
 //            new Input<RealParameter>("times", "The times t_i specifying when diversification rate changes occur", (RealParameter) null);
 
-    
+
 
     // Replace constant values from parent class.
 
@@ -110,61 +110,98 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //        for (int i = 0; i < death.length; i++) {
 //            System.out.print(death[i] + " ");
 //        }
-//        System.out.println();
-//        for (int i = 0; i < psi.length; i++) {
-//            System.out.print(psi[i] + " ");
-//        }
+        System.out.println("RHO");
+        for (int i = 0; i < rho.length; i++) {
+            System.out.print(rho[i] + " ");
+        }
 
     }
 
 
-    
+
 //    public void birthExceedsDeath() {
 //        Arrays.fill(birthExceedsDeath, false);
 //    }
 
 
     public double Ai(int index){
-//        System.out.println("calling single Ai");
-        System.out.println("Ai = "  + Ai(birth[index], death[index], psi[index]));
+//        System.out.println("Ai = "  + Ai(birth[index], death[index], psi[index]));
         return Ai(birth[index], death[index], psi[index]);
     }
-
-
 
 
     //KT interim: Correct in skyline
     //KT interim: Are the time indices off by one?
     public double q(double t) {
         int index = index(t);
-        return q(t, Ai(index), Bi(index));
+        return q(t, index);
     }
 
-    public double q(double t, double Ai, double Bi) {
-        int index = index(t);
-        double v = Math.exp(-Ai * (t-t_j(t)));
-        System.out.println("q at " + t + " is " + (4 * v / Math.pow((v*(1-Bi) + (1+Bi)), 2.0)));
-        System.out.println("q values t " + t + " " + t_j(t));
+    public double q(double t, int index) {
+        return q(t, t_j(index), Ai(index), Bi(index));
+    }
+
+    public double q(double t, double t_i, double Ai, double Bi) {
+        double v = Math.exp(-Ai * (t-t_i));
         return 4 * v / Math.pow((v*(1-Bi) + (1+Bi)), 2.0);
     }
 
     //KT interim: Are the time indices off by one?
     public double log_q(double t) {
         int index = index(t);
-        return log_q(index, t_j(t), t);
+        return log_q(t, index);
+    }
+
+    public double log_q(double t, int index) {
+        return log_q(index, t_j(index), t);
+
+    }
+
+    public double log_q(int index, double ti, double t) {
+        // replacing Math.log( g(...) ) for better numerical stability
+        return Math.log(4) - Ai(index) * (t - ti) - 2 * Math.log(Math.exp(-Ai(index) * (t - ti)) * (1 - Bi(index)) + (1 + Bi(index)));
     }
 
     public double q_tilde(double t){
         int index = index(t);
-        System.out.println("q_tilde at " + t);
-        System.out.println("t_j = " + t_j(t));
-        return Math.sqrt(q(t)*Math.exp(-(birth[index]+death[index]+psi[index])*(t - t_j(t))));
+//        System.out.println("q_tilde at " + t);
+//        System.out.println("t_j = " + t_j(t));
+        return q_tilde(t, index);
+    }
+
+    public double q_tilde(double t, int index){
+        return Math.sqrt(q(t,index)*Math.exp(-(birth[index]+death[index]+psi[index])*(t - t_j(index))));
     }
 
     public double log_q_tilde(double t){
         int index = index(t);
-        return 0.5*(log_q(t)-(birth[index]+death[index]+psi[index])*(t-t_j(t)));
+        return log_q_tilde(t, index);
     }
+
+    public double log_q_tilde(double t, int index){
+        return 0.5*(log_q(t,index)-(birth[index]+death[index]+psi[index])*(t-t_j(index)));
+    }
+
+    public double log_Q_tilde(double t){
+    double result = 0;
+        for (int k = 0; k < index(t); k++) {
+        if (times[k] != t){
+            result += log_q_tilde(times[k]);
+        }
+    }
+        return result + log_q_tilde(t);
+    }
+
+    public double log_Q(double t){
+        double result = 0;
+        for (int k = 0; k < index(t); k++) {
+            if (times[k] != t){
+                result += log_q(times[k]);
+            }
+        }
+        return result + log_q(t);
+    }
+
 
     public double t_j(double t){
         int index = index(t);
@@ -193,7 +230,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t, t_j(index));
             }
             else {
-                System.out.println("adjusting p where t = " + t + " and index = " + index);
+//                System.out.println("adjusting p where t = " + t + " and index = " + index);
                 return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t, 0);
             }
         }
@@ -203,16 +240,16 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
     //KT interim: Set rho_j to zero in skyline model equation.
     public double Bi(int index){
 //        System.out.println("calling single Bi at index " + index);
-        if (index == 0) {
-            System.out.println("Bi = " + Bi(birth[index], death[index], psi[index], rho[index], Ai(index), p_minus_1(index)));
-        }
-        return Bi(birth[index], death[index], psi[index], rho[index], Ai(index), p_minus_1(index));
+//        if (index == 0) {
+//            System.out.println("Bi = " + Bi(birth[index], death[index], psi[index], 0, Ai(index), p_minus_1(index)));
+//        }
+        return Bi(birth[index], death[index], psi[index], 0, Ai(index), p_minus_1(index));
     }
 
     public double p_minus_1(int index) {
         if (index == 0){
-            System.out.println("p_minus_1 = " + (1-rho[0]));
-            return 1 - rho[0];
+//            System.out.println("p_minus_1 = " + (1-rho[totalIntervals-1]));
+            return 1 - rho[totalIntervals-1];
         }
 //        System.out.println("p_add_1 at index " + index);
         index = index-1;
@@ -231,7 +268,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
     public double p(double birth, double death, double psi, double A, double B, double t, double t_j) {
         if (t == 0){
-            return 1 - rho[0];
+            return 1 - rho[totalIntervals-1];
         }
 //        System.out.println("t_j = " + t_j(t));
         double mid = A * (1 + B - (1 - B) * Math.exp(-A * (t - t_j))) / (1 + B + (1 - B) * Math.exp(-A * (t - t_j)));
@@ -268,6 +305,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         double logP = 0;
         SRTree tree = (SRTree) treeInput.get();
         int nodeCount = tree.getNodeCount();
+        System.out.println("node count: " + nodeCount);
         preCalculation(tree);
         for(int i = 0; i < l; i++) {
             if (birthExceedsDeath[i] && birth[i] <= death[i]) {
@@ -288,16 +326,16 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         }
 
         if (!conditionOnRootInput.get()){
-            logP += log_q(x0);
-            System.out.println("logP" + logP);
+            logP += log_Q(x0);
+            System.out.println("conditioning 1 " + logP);
         } else {
             if (tree.getRoot().isFake()){   //when conditioning on the root we assume the process
                 //starts at the time of the first branching event and
                 //that means that the root can not be a sampled ancestor
                 return Double.NEGATIVE_INFINITY;
             } else {
-                logP += log_q(x1);
-                System.out.println("logP" + logP);
+                logP += log_Q(x1);
+                System.out.println("logP " + logP);
             }
         }
 
@@ -313,166 +351,90 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 //                logP -= log_oneMinusP0Hat(x0, c1, c2);
 //            }
 //        }
+        // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
+        for (StratigraphicRange range : ((SRTree) tree).getSRanges()) {
+            Node first = tree.getNode(range.getNodeNrs().get(0));
+            List<Integer> fossils = range.getNodeNrs();
+            int first_node_index = index(first.getHeight());
+            double tFirst = first.getHeight();
+
+
+            if (!range.isSingleFossilRange()) {
+                Node lastNode = tree.getNode(range.getNodeNrs().get(range.getNodeNrs().size() - 1));
+                double tLast = lastNode.getHeight();
+                int last_node_index = index(tLast);
+
+                System.out.println("SR branch from " + tFirst + " to " + tLast);
+                logP += log_Q_tilde(tFirst) - log_Q(tFirst) ;
+                logP += log_Q(tLast) - log_Q_tilde(tLast);
+                System.out.println("minus q tilde " + tLast + " add q " + tLast);
+                System.out.println("minus q " + tFirst + " add q tilde " + tFirst);
+
+
+
+                if (first_node_index == last_node_index) {
+                    logP += psi[first_node_index] * (tFirst - tLast); // TERM 3
+                } else {
+                    logP += psi[first_node_index] * (tFirst - times[first_node_index-1]); // TERM 13
+                    logP += psi[last_node_index] * (times[last_node_index] - tLast); // TERM 14
+                    for (int j =  last_node_index + 1; j < first_node_index; j++) {
+                        logP += psi[j] * (times[j] - times[j-1]); // TERM 15
+                    }
+                }
+            }
+
+            Node ancestralLast = findAncestralRangeLastNode(first);
+            // SR i is in I, i and a(i) are in the same vertical line in the graphical representation.
+            if (ancestralLast != null) {
+                double tAncestor = ancestralLast.getHeight();
+                double tChild = first.getHeight();
+                int ancestorIndex = index(tAncestor);
+                int childIndex = index(tChild);
+                double qsum = 1.0;
+                for (int z = childIndex; z < ancestorIndex; z++) {
+                    qsum *= q_tilde(times[z])/q(times[z]);
+                }
+                qsum = qsum*q_tilde(tAncestor)*q(tChild)/q_tilde(tChild)/q(tAncestor);
+                qsum = 1 - qsum;
+                logP += Math.log(qsum);
+
+            }
+        }
+
         for (int i = 0; i < nodeCount; i++) {
             Node node = tree.getNode(i);
             double height = node.getHeight();
             Node parent = node.getParent();
-            double parent_height = -1;
+            double parent_height = 0;
             int node_index = index(height);
-            double skyline_parent = -1;
-            if (node.getChildCount() == 2) {
-                logP += birth[node_index];  // TERM 2
-                System.out.println("logP @ 2 =" + logP);
-
-            } else {
-                if (!node.isFake()) {
-                    parent_height = parent.getHeight();
-                    skyline_parent = parent_height;
-                    if ((node_index < totalIntervals - 1) && (times[node_index + 1] < parent_height && times[node_index + 1] > height)) {
-                        skyline_parent = times[node_index + 1];
-                    }
-                    // Not SR branch
-                    // TODO: are q_tilde and q the right way around for time intervals?
-                    if (tree.getRangeOfNode(node) == null) {
-                        logP += log_q(parent_height) - log_q(height); // TERM 8
-                        System.out.println("logP @ 8 =" + logP);
-
-                        if (skyline_parent != parent_height) {
-                            logP += Math.log(q(skyline_parent)); // TERM 6
-                            System.out.println("logP @ 6a =" + logP);
-
-                        }
-                    } else {
-                        logP += log_q_tilde(parent_height) - log_q_tilde(height);
-                        System.out.println("logP" + logP);
-                        System.out.println("logP @ 7 =" + logP);
-                        if (skyline_parent != parent_height) {
-                            logP += Math.log(q_tilde(skyline_parent));  // TERM 7
-                            System.out.println("logP @ 6b =" + logP);
-                        }
-                    }
-                }
-
                 if (node.isLeaf()) {
                     if (!node.isDirectAncestor()) {
-                        if (node.getHeight() > 0.000000000005 || rho[node_index] == 0.) {
-                            logP += Math.log(p(height)); // TERM 4
-                            System.out.println("adding p at " + height);
-                            System.out.println("logP @ 4 =" + logP);
-                            //                            //SR y_i
+                        Node fossilParent = node.getParent();
+                        if (node.getHeight() > 0.000000000005 || rho[totalIntervals-node_index-1] == 0.) {
+                            logP += Math.log(p(height)); // - log_q(height); // TERM 4
+                            if (((SRTree)tree).belongToSameSRange(i, fossilParent.getNr())) {
+                                logP -= log_Q(height);
 
-                            //                        if (((SRTree)tree).belongToSameSRange(i, fossilParent.getNr())) {
-                            //                            logP += Math.log(psi[node_index]) - log_q_tilde(node.getHeight()) + log_p0s(node.getHeight());
-                            //                        } else {
-                            //                            // SR o_i
-                            //                            logP += Math.log(psi[node_index]) - log_q(node.getHeight()) + log_p0s(node.getHeight());
-                            //                        }
+                            }
+                            else {
+                                logP -= log_Q(height);
+
+                            }
+                            logP += Math.log(psi[node_index]); // TERM 5
                         } else {
-                            logP += Math.log(rho[node_index]); //TERM 1
-                            System.out.println("logP @ 1 =" + logP);
-                            System.out.println("adding rho");
+                            logP += Math.log(rho[totalIntervals-node_index-1]); //TERM 1
                         }
                     }
+
                 } else {
                     if (node.isFake()) {
-                                            logP += Math.log(psi[node_index]);
-                                            System.out.println("adding psi at " + height);
-                        parent = node.getParent();
-                        //                    Node child = node.getNonDirectAncestorChild();
-                        //                    Node DAchild = node.getDirectAncestorChild();
-                        //                    if (parent != null && ((SRTree)tree).belongToSameSRange(parent.getNr(),DAchild.getNr())) {
-                        //                        logP += - log_q_tilde(node.getHeight()) + log_q(node.getHeight());
-                        //                    }
-                        //                    if (child != null && ((SRTree)tree).belongToSameSRange(i,child.getNr())) {
-                        //                        logP += - log_q(node.getHeight()) +  log_q_tilde(node.getHeight());
-                        //                    }
+                        logP += Math.log(psi[node_index]);
                     } else {
-                        // speciation event
-                        //                    logP += Math.log(birth[node_index]) + log_q(node.getHeight());
-                        logP += Math.log(birth[node_index]);
-                        System.out.println("logP @ unknown =" + logP);
-                    }
-                }
-            }
-        }
-
-            // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
-            for (StratigraphicRange range : ((SRTree) tree).getSRanges()) {
-                Node first = tree.getNode(range.getNodeNrs().get(0));
-                List<Integer> fossils = range.getNodeNrs();
-                int first_node_index = index(first.getHeight());
-//                logP += Math.log(psi[index(first.getHeight())]); // TERM 5
-//                System.out.println("adding psi at " + first.getHeight());
-                System.out.println("logP @ 5a =" + logP);
-
-                if (fossils.size() != 1) {
-//                    logP += Math.log(psi[index(tree.getNode(fossils.get(fossils.size()-1)).getHeight())]);
-//                    System.out.println("adding psi at " + tree.getNode(fossils.get(fossils.size()-1)).getHeight());
-                    System.out.println("logP @ 5b =" + logP);
-                }
-
-
-                if (!range.isSingleFossilRange()) {
-                    double tFirst = first.getHeight();
-                    double tLast = tree.getNode(range.getNodeNrs().get(range.getNodeNrs().size() - 1)).getHeight();
-                    int last_node_index = index(tLast);
-                    System.out.println("first node index: " + first_node_index + ", last node index: " + last_node_index);
-                    System.out.println("Stratigraphic range from: " + tFirst + " to : " + tLast);
-                    if (first_node_index == last_node_index) {
-                        logP += psi[first_node_index] * (tFirst - tLast); // TERM 3
-                        System.out.println("adding psi difference");
-                        System.out.println("logP @ 3 =" + logP);
-                    } else {
-                        logP += psi[first_node_index] * (tFirst - times[first_node_index]); // TERM 13
-                        logP += psi[last_node_index] * (times[last_node_index] - tLast); // TERM 14
-                        System.out.println("adding psi difference");
-                        System.out.println("logP @ 14 =" + logP);
-                        for (int j =  last_node_index + 1; j < first_node_index; j++) {
-                            logP += psi[j] * (times[j - 1] - times[j]); // TERM 15
-                            System.out.println("logP @ 15 =" + logP);
-                            //                        logP += Math.log(q(times[j-1]));
-                        }
-                    }
-                }
-                Node ancestralLast = findAncestralRangeLastNode(first);
-                // SR i is in I, i and a(i) are in the same vertical line in the graphical representation.
-                if (ancestralLast != null) {
-                    System.out.println("ancestralLast is " + ancestralLast.getHeight() + " first = " + first.getHeight());
-
-                    double tAncestor = ancestralLast.getHeight();
-                    double tChild = first.getHeight();
-                    int ancestorIndex = index(tAncestor);
-                    int childIndex = index(tChild);
-                    System.out.println("ancestor index: " + ancestorIndex);
-                    System.out.println("child index: " + childIndex);
-                    System.out.println("tAncestor: " + tAncestor);
-                    System.out.println("tChild: " + tChild);
-                    double qsum;
-                    if (ancestorIndex == childIndex) {
-                        logP += Math.log(1 - q(tChild) / q_tilde(tChild) * q_tilde(tAncestor) / q(tAncestor)); // TERM 9
-                        System.out.println("logP @ 9 =" + logP);
-                    } else {
-                        System.out.println("tAncestor: " + tAncestor + "ancestorIndex: " + ancestorIndex + "time " + times[ancestorIndex]);
-                       System.out.println("here:" + q(times[ancestorIndex-1]) + " " + q(tAncestor) + " "+ q_tilde(tAncestor) + " " + q_tilde(times[ancestorIndex-1]));
-                       System.out.println("index of time 5 is " + index(5));
-                        qsum = 1 - q(times[ancestorIndex-1]) / q(tAncestor) * q_tilde(tAncestor) / q_tilde(times[ancestorIndex-1]); // TERM 10
-                        System.out.println("qsum a = " + qsum);
-                        qsum += 1 - q(tChild) / q(times[childIndex]) * q_tilde(times[childIndex]) / q_tilde(tChild); // TERM 11
-                        System.out.println("qsum b = " + (1 - q(tChild) / q(times[childIndex]) * q_tilde(times[childIndex]) / q_tilde(tChild)) + " " + childIndex + " " + tChild + " " + q_tilde(tChild));
-                       for (int j = childIndex + 1; j < ancestorIndex; j++) {
-                            qsum += 1 - q(times[j]) / q(times[j + 1]) * q_tilde(times[j + 1] / q_tilde(times[j])); // TERM 12
-                            System.out.println("qsum c = " + (1 - q(times[j]) / q(times[j + 1]) * q_tilde(times[j + 1] / q_tilde(times[j]))));
-
-                        }
-                        System.out.println("qsum d = " + qsum);
-
-                        logP += Math.log(qsum);
-                        System.out.println("logP @ 12 =" + logP);
+                        logP += Math.log(birth[node_index]) + log_Q(height);
                     }
                 }
             }
             System.out.println("END");
-            System.out.println(p(2));
         return logP;
     }
 
