@@ -129,6 +129,26 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return result + log_q(t);
     }
 
+    public double q_comb(double t){
+        double result = 1;
+        for (int k = 0; k < index(t); k++) {
+            if (times[k] != t){
+                result *= q(times[k]);
+            }
+        }
+        return result * q(t);
+    }
+
+    public double q_comb_tilde(double t){
+        double result = 1;
+        for (int k = 0; k < index(t); k++) {
+            if (times[k] != t){
+                result *= q_tilde(times[k]);
+            }
+        }
+        return result * q_tilde(t);
+    }
+
 
     public double t_j(double t){
         int index = index(t);
@@ -146,6 +166,16 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return 0;
     }
     return times[index-1];
+    }
+
+    public int rate_index(double t){
+        int index = index(t);
+        if (t == times[index] && index != totalIntervals - 1){
+            return index + 1;
+        }
+        else {
+            return index;
+        }
     }
 
     public double p(double t) {
@@ -212,6 +242,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
     public double calculateLogP()
     {
         double logP = 0;
+        double checklog = 0;
         SRTree tree = (SRTree) treeInput.get();
         int nodeCount = tree.getNodeCount();
         preCalculation(tree);
@@ -233,7 +264,6 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
         if (!conditionOnRootInput.get()){
             logP += log_q_comb(x0);
-            System.out.println("conditioning 1 " + logP);
         } else {
             if (tree.getRoot().isFake()){   //when conditioning on the root we assume the process
                 //starts at the time of the first branching event and
@@ -241,7 +271,6 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 return Double.NEGATIVE_INFINITY;
             } else {
                 logP += log_q_comb(x1);
-                System.out.println("logP " + logP);
             }
         }
 
@@ -273,11 +302,14 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
                 if (first_node_index == last_node_index) {
                     logP += psi[first_node_index] * (tFirst - tLast);
+
                 } else {
-                    logP += psi[first_node_index] * (tFirst - times[first_node_index-1]);
-                    logP += psi[last_node_index] * (times[last_node_index] - tLast);
-                    for (int j =  last_node_index + 1; j < first_node_index; j++) {
-                        logP += psi[j] * (times[j] - times[j-1]);
+                    logP += psi[rate_index(tFirst)] * (tFirst - times[first_node_index-1]);
+                    logP += psi[rate_index(tLast)] * (times[last_node_index] - tLast);
+                    int k = rate_index(tLast) + 1;
+                    for (int j = last_node_index+1; j < first_node_index; j++) {
+                        logP += psi[k] * (times[j] - times[j-1]);
+                        k++;
                     }
                 }
             }
@@ -287,13 +319,8 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
             if (ancestralLast != null) {
                 double tAncestor = ancestralLast.getHeight();
                 double tChild = first.getHeight();
-                int ancestorIndex = index(tAncestor);
-                int childIndex = index(tChild);
-                double qsum = 1.0;
-                for (int z = childIndex; z < ancestorIndex; z++) {
-                    qsum *= q_tilde(times[z])/q(times[z]);
-                }
-                qsum = qsum*q_tilde(tAncestor)*q(tChild)/q_tilde(tChild)/q(tAncestor);
+                double qsum;
+                qsum = q_comb_tilde(tAncestor)/q_comb(tAncestor)*q_comb(tChild)/q_comb_tilde(tChild);
                 logP += Math.log(1-qsum);
             }
         }
@@ -301,31 +328,31 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         for (int i = 0; i < nodeCount; i++) {
             Node node = tree.getNode(i);
             double height = node.getHeight();
-            int node_index = index(height);
                 if (node.isLeaf()) {
                     if (!node.isDirectAncestor()) {
                         Node fossilParent = node.getParent();
-                        if (height > 0.000000000005 || rho[totalIntervals-node_index-1] == 0.) {
+                        if (height > 0.000000000005 || rho[totalIntervals-rate_index(height)-1] == 0.) {
                             logP += Math.log(p(height));
                             if (tree.belongToSameSRange(i, fossilParent.getNr())) {
                                 logP -= log_q_comb(height);
-
                             }
                             else {
                                 logP -= log_q_comb(height);
-
                             }
-                            logP += Math.log(psi[node_index]);
+                            logP += Math.log(psi[rate_index(height)]);
+
                         } else {
-                            logP += Math.log(rho[totalIntervals-node_index-1]);
+                            logP += Math.log(rho[totalIntervals-rate_index(height)-1]);
+
                         }
                     }
 
                 } else {
                     if (node.isFake()) {
-                        logP += Math.log(psi[node_index]);
+                        logP += Math.log(psi[rate_index(height)]);
+
                     } else {
-                        logP += Math.log(birth[node_index]) + log_q_comb(height);
+                        logP += Math.log(birth[rate_index(height)]) + log_q_comb(height);
                     }
                 }
             }
