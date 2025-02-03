@@ -4,6 +4,7 @@ import bdsky.evolution.speciation.BirthDeathSkylineModel;
 import beast.base.core.Citation;
 import beast.base.core.Description;
 import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TreeInterface;
 import sr.evolution.sranges.StratigraphicRange;
 import sr.evolution.tree.SRTree;
 
@@ -239,11 +240,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
 
     @Override
-    public double calculateLogP()
-    {
+    public double calculateTreeLogLikelihood(TreeInterface t) {
         double logP = 0;
-        double checklog = 0;
-        SRTree tree = (SRTree) treeInput.get();
+        SRTree tree = (SRTree) t;
         int nodeCount = tree.getNodeCount();
         preCalculation(tree);
         for(int i = 0; i < l; i++) {
@@ -254,9 +253,21 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 return Double.NEGATIVE_INFINITY;
             }
         }
-
         double x0 = origin.get().getArrayValue();
         double x1=tree.getRoot().getHeight();
+//        System.out.println("TIMES KT: ");
+        for(int i = 1; i < totalIntervals; i++) {
+//            System.out.print(times[i-1]+ " ");
+            if (times[i] < times[i-1]){
+                return Double.NEGATIVE_INFINITY;
+            }
+            if (times[i] > x0){
+                return Double.NEGATIVE_INFINITY;
+            }
+        }
+//        System.out.println();
+
+
 
         if (x0 < x1 ) {
             return Double.NEGATIVE_INFINITY;
@@ -357,6 +368,10 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 }
             }
         return logP;
+    }
+
+    public int getChecksum() {
+        return super.getChecksum();
     }
 
 }
