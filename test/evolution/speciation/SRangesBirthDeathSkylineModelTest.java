@@ -65,7 +65,8 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667"));
         model.setInputValue("contemp", true);
         model.initAndValidate();
-        assertEquals(-33.74668640318646, model.calculateLogP(), 1e-7);
+        System.out.println(model.calculateLogP());
+        assertEquals(-33.74668640318646, model.calculateLogP(), 1e-9);
 
 
     }
@@ -108,7 +109,8 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667"));
         model.setInputValue("contemp", true);
         model.initAndValidate();
-        assertEquals(-30.588945157591503, model.calculateLogP(), 1e-7);
+        System.out.println(model.calculateLogP());
+        assertEquals(-30.588945157591503, model.calculateLogP(), 1e-9);
 
     }
 
@@ -151,6 +153,50 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.6666666667 0.6 0.9756097561 0.7692307692"));
         model.setInputValue("contemp", true);
         model.initAndValidate();
+        System.out.println(model.calculateLogP());
+        assertEquals(-24.68765411973161, model.calculateLogP(), 1e-7);
+    }
+
+    @Test
+    public void testLikelihoodSkylineRatesTwo() throws Exception {
+        String newick = "(((((A:3.4,2_last:0.0):1.0,2_first:0.0):0.7,(B:3.5,(3_last:1.7,3_first:0.0):0.8):1.6):0.55,1_last:0.0):0.85,1_first:0.0):0.5";
+
+        Tree tree_initial = new TreeParser(newick, false);
+        StratigraphicRange sr1 = new StratigraphicRange();
+        Taxon taxon1_first = new Taxon("1_first");
+        Taxon taxon1_last = new Taxon("1_last");
+        sr1.setInputValue("firstOccurrence", taxon1_first);
+        sr1.setInputValue("lastOccurrence", taxon1_last);
+        StratigraphicRange sr2 = new StratigraphicRange();
+        Taxon taxon2_first = new Taxon("2_first");
+        Taxon taxon2_last = new Taxon("2_last");
+        sr2.setInputValue("firstOccurrence", taxon2_first);
+        sr2.setInputValue("lastOccurrence", taxon2_last);
+        StratigraphicRange sr3 = new StratigraphicRange();
+        Taxon taxon3_first = new Taxon("3_first");
+        Taxon taxon3_last = new Taxon("3_last");
+        sr3.setInputValue("firstOccurrence", taxon3_first);
+        sr3.setInputValue("lastOccurrence", taxon3_last);
+        ArrayList<StratigraphicRange> sranges = new ArrayList<>();
+        sranges.add(sr1);
+        sranges.add(sr2);
+        sranges.add(sr3);
+        SRTree tree = new SRTree();
+        tree.setInputValue("stratigraphicRange", sranges);
+        tree.assignFrom(tree_initial);
+
+        SRangesBirthDeathSkylineModel model = new SRangesBirthDeathSkylineModel();
+        model.setInputValue("tree", tree);
+        model.setInputValue("intervalTimes", new RealParameter("5 4.7 3.5 1 0"));
+        model.setInputValue("origin", new RealParameter("7.0"));
+        model.setInputValue("removalProbability", new RealParameter("0.0 0.0 0.0 0.0 0.0"));
+        model.setInputValue("rho", new RealParameter("0.7"));
+        model.setInputValue("netDiversification", new RealParameter("0.25 0.5 0.09 0.5 0.5"));
+        model.setInputValue("turnOver", new RealParameter("0.1666666667 0.2857142857 0.1 0.375 0.375"));
+        model.setInputValue("samplingProportion", new RealParameter("0.6666666667 0.6 0.9756097561 0.7692307692 0.7692307692"));
+        model.setInputValue("contemp", true);
+        model.initAndValidate();
+        System.out.println(model.calculateLogP());
         assertEquals(-24.68765411973161, model.calculateLogP(), 1e-7);
     }
 }

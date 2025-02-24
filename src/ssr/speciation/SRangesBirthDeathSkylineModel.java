@@ -330,9 +330,27 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
             if (ancestralLast != null) {
                 double tAncestor = ancestralLast.getHeight();
                 double tChild = first.getHeight();
-                double qsum;
-                qsum = q_comb_tilde(tAncestor)/q_comb(tAncestor)*q_comb(tChild)/q_comb_tilde(tChild);
-                logP += Math.log(1-qsum);
+                int ancestral_index = index(tAncestor);
+                int child_index = index(tChild);
+                System.out.println("Ancestral last node: " + tAncestor);
+                System.out.println("child node: " + tChild);
+                double qsum = 0;
+                double qmultiplier = 1;
+                if (ancestral_index == child_index){
+                    qsum = q_tilde(tAncestor)/q(tAncestor)*q(tChild)/q_tilde(tChild);
+                    qsum = 1 - qsum;
+                }
+                else {
+                    qsum = q_comb(tChild)/q_comb_tilde(tChild)*q_comb_tilde(times[ancestral_index - 1])/q_comb(times[ancestral_index-1]); // ok
+                    qsum *= (1- q_tilde(tAncestor)/q(tAncestor)); // ok
+                    qsum += 1 - q(tChild)/q_tilde(tChild)*q_tilde(times[child_index])/q(times[child_index]); // ok
+
+                    for (int i = child_index + 1; i < ancestral_index; i++) {
+                        qsum += (q_comb_tilde(times[i-1])/q_comb(times[i-1]) - q_comb_tilde(times[i])/q_comb(times[i]))*(q_comb(tChild)/q_comb_tilde(tChild));
+                    }
+                }
+                System.out.println("qsum: " + qsum + " log " + Math.log(qsum));
+                logP += Math.log(qsum);
             }
         }
 
