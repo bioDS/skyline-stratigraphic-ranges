@@ -69,6 +69,14 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return q(t, index);
     }
 
+    public int boundary_index(double t){
+        int index = index(t);
+        if (times[index] == t){
+            return index - 1;
+        }
+        return index;
+    }
+
     public double q(double t, int index) {
         return q(t, t_j(index), Ai(index), Bi(index));
     }
@@ -110,6 +118,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return 0.5*(log_q(t,index)-(birth[index]+death[index]+psi[index])*(t-t_j(index)));
     }
 
+    /**
+     * @return log tilde q at time t, plus log of q at each time shift smaller than t.
+     */
     public double log_q_comb_tilde(double t){
     double result = 0;
         for (int k = 0; k < index(t); k++) {
@@ -120,6 +131,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return result + log_q_tilde(t);
     }
 
+    /**
+     * @return log q at time t, plus log of q at each time shift smaller than t.
+     */
     public double log_q_comb(double t){
         double result = 0;
         for (int k = 0; k < index(t); k++) {
@@ -130,6 +144,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return result + log_q(t);
     }
 
+    /**
+     * @return q at time t, multiplied by q at each time shift smaller than t.
+     */
     public double q_comb(double t){
         double result = 1;
         for (int k = 0; k < index(t); k++) {
@@ -140,6 +157,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return result * q(t);
     }
 
+    /**
+     * @return tilde q at time t, multiplied by q at each time shift smaller than t.
+     */
     public double q_comb_tilde(double t){
         double result = 1;
         for (int k = 0; k < index(t); k++) {
@@ -150,7 +170,10 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return result * q_tilde(t);
     }
 
-
+    /**
+     * @return the closest time shift equal or less than time t, or 0 if
+     * t is below the smallest time shift.
+     */
     public double t_j(double t){
         int index = index(t);
         if(t == times[index]){
@@ -162,13 +185,19 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return 0;
     }
 
-    public double t_j(int index){
-    if (index == 0){
+    /**
+     * @return the i'th time interval boundary
+     */
+    public double t_j(int i){
+    if (i == 0){
         return 0;
     }
-    return times[index-1];
+    return times[i-1];
     }
 
+    /**
+     * @return the index of a rate (lambda, mu, psi) at time t
+     */
     public int rate_index(double t){
         int index = index(t);
         if (t == times[index] && index != totalIntervals - 1){
@@ -181,14 +210,18 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
     public double p(double t) {
     int index = index(t);
+    // if current time is on a time shift boundary, we need to set t_j such that t does not equal t_j
         if (times[index] == t){
+            // t_j becomes the next smallest time shift boundary
             if (index != 0){
                 return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t, t_j(index));
             }
+            // t is between 0 and the smallest time shift boundary, so t_j = 0
             else {
                 return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t, 0);
             }
         }
+        // normal case where t is not on a time shift boundary
         return p(birth[index], death[index], psi[index], Ai(index), Bi(index), t);
     }
 
@@ -196,6 +229,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         return Bi(birth[index], death[index], psi[index], 0, Ai(index), p_minus_1(index));
     }
 
+    /**
+     * @return p_{j-1}(t) where j is the index at time t
+     */
     public double p_minus_1(int index) {
         if (index == 0){
             return 1 - rho[totalIntervals-1];
@@ -255,9 +291,7 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
         }
         double x0 = origin.get().getArrayValue();
         double x1=tree.getRoot().getHeight();
-//        System.out.println("TIMES KT: ");
         for(int i = 1; i < totalIntervals; i++) {
-//            System.out.print(times[i-1]+ " ");
             if (times[i] < times[i-1]){
                 return Double.NEGATIVE_INFINITY;
             }
@@ -265,9 +299,6 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 return Double.NEGATIVE_INFINITY;
             }
         }
-//        System.out.println();
-
-
 
         if (x0 < x1 ) {
             return Double.NEGATIVE_INFINITY;
@@ -275,7 +306,6 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
 
         if (!conditionOnRootInput.get()){
             logP += log_q_comb(x0);
-//            System.out.println("+ q(" + x0 + ")");
         } else {
             if (tree.getRoot().isFake()){   //when conditioning on the root we assume the process
                 //starts at the time of the first branching event and
@@ -283,16 +313,15 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 return Double.NEGATIVE_INFINITY;
             } else {
                 logP += log_q_comb(x1);
-//                System.out.println("+ q(" + x1 + ")");
 
             }
         }
 
-       //TODO: reinstate with corrections?
-//        if (conditionOnSamplingInput.get()) {
-//            logP -= log_oneMinusP0(x0, c1, c2);
-//        }
-//
+        if (conditionOnSurvival.get()) {
+            logP -= Math.log(1 - p(x0));
+        }
+
+        //TODO: reinstate with corrections?
 //        if (conditionOnRhoSamplingInput.get()) {
 //            if (conditionOnRootInput.get()) {
 //                logP -= Math.log(lambda) + log_oneMinusP0Hat(x1, c1, c2)+ log_oneMinusP0Hat(x1, c1, c2);
@@ -311,61 +340,60 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                 double tLast = lastNode.getHeight();
                 int last_node_index = index(tLast);
 
-//                System.out.println("+ q~(" + tFirst + ") at z");
-//                System.out.println("- q(" + tFirst + ") at z");
-//
-//                System.out.println("- q~(" + tLast + ") at z");
-//                System.out.println("+ q(" + tLast + ") at z");
-
+                // range is within one time interval
                 if (first_node_index == last_node_index) {
                     logP += psi[first_node_index] * (tFirst - tLast);
-//                    System.out.println("psi x " + (tFirst - tLast));
+//                    System.out.println("psi x " + (tFirst - tLast) + " " + psi[first_node_index]);
 
                 } else {
+                    // calculate contribution across each of the time intervals which the range spans
                     logP += psi[rate_index(tFirst)] * (tFirst - times[first_node_index-1]);
                     logP += psi[rate_index(tLast)] * (times[last_node_index] - tLast);
-//                    System.out.println("psi x " + (tFirst - times[first_node_index-1] + times[last_node_index] - tLast));
+//                    System.out.println("psi x " + (tFirst - times[first_node_index-1]) + " " + (times[last_node_index] - tLast) + " " + psi[rate_index(tFirst)] + " " + psi[rate_index(tLast)]);
                     int k = rate_index(tLast) + 1;
                     for (int j = last_node_index+1; j < first_node_index; j++) {
                         logP += psi[k] * (times[j] - times[j-1]);
-//                        System.out.println("psi x " + (times[j] - times[j-1]));
+//                        System.out.println("psi x " + (times[j] - times[j-1]) + " " + psi[k]);
                         k++;
                     }
                 }
             }
+
+            // Contribution of unobserved speciation events / stratigraphic ranges which have ancestor ranges
             Node ancestralLast = findAncestralRangeLastNode(first);
             // SR i is in I, i and a(i) are in the same vertical line in the graphical representation.
             if (ancestralLast != null) {
                 double tAncestor = ancestralLast.getHeight();
                 double tChild = first.getHeight();
-//                System.out.println("tChild: " + tChild + " tAncestor: " + tAncestor);
                 int ancestral_index = index(tAncestor);
                 int child_index = index(tChild);
-                double qsum = 0;
-                if (ancestral_index == child_index){
-                    qsum = q_tilde(tAncestor)/q(tAncestor)*q(tChild)/q_tilde(tChild);
-                    qsum = 1 - qsum;
-//                    System.out.println("1 - q~(" + tAncestor + ")/q("+tAncestor+")*q("+tChild+")/q~("+tChild+")");
+                double qsum;
+                // [tChild, tAncestor] are contained within one time interval
+                // use index rather than boundary index here as we don't need to divide our integral into sub-intervals
+                if (index(tChild) == index(tAncestor)) {
+                    qsum = 1 - q_tilde(tAncestor)/q(tAncestor)*q(tChild)/q_tilde(tChild);
                 }
                 else {
-                    qsum = q(tChild)/q_tilde(tChild);
-//                    System.out.println("*q("+tChild+")/q~("+tChild+")");
+                    // Integral from tAncestor down to the next time interval boundary
+                    qsum = q(tChild)/q_tilde(tChild)*(1- q_tilde(tAncestor)/q(tAncestor));
+                    // Multiply by constant terms
                     for (int i = child_index; i < ancestral_index; i++) {
-                        qsum *= q_tilde(times[i])/q(times[i]);
-//                        System.out.println("*q~("+times[i]+")/q("+times[i]+")");
+                        if (times[i] != tChild && times[i] != tAncestor) {
+                            qsum *= q_tilde(times[i]) / q(times[i]);
+                        }
                     }
-                    qsum *= (1- q_tilde(tAncestor)/q(tAncestor)); // ok
-//                    System.out.println("1 - q~("+tAncestor+")/q("+tAncestor+")");
-                    qsum += 1 - q(tChild)/q_tilde(tChild)*q_tilde(times[child_index])/q(times[child_index]); // ok
-//                    System.out.println("1 - q~(" + times[child_index] + ")/q("+times[child_index]+")*q("+tChild+")/q~("+tChild+")");
+                    // Add integral from tChild to the time interval boundary above it.
+                    // Will be equal to zero if tChild is at a time shift boundary
+                    qsum += 1 - q(tChild)/q_tilde(tChild)*q_tilde(times[child_index])/q(times[child_index]);
 
-
+                    // For each complete time interval that [tChild, tAncestor] crosses, calculate the integral
+                    // To simplify this expression, we use "comb" functions which multiple q and tilde q values at a
+                    // time t by q at each of the rate shift time boundaries below t.
                     for (int i = child_index + 1; i < ancestral_index; i++) {
-                        qsum += (q_comb_tilde(times[i-1])/q_comb(times[i-1]) - q_comb_tilde(times[i])/q_comb(times[i]))*(q_comb(tChild)/q_comb_tilde(tChild));
-//                        System.out.println("q("+tChild+")/q~("+tChild+")*[q~("+times[i-1]+")/q("+times[i-1]+") - q~("+times[i]+")/q("+times[i]+")]");
+                        qsum += q_comb(tChild)/q_comb_tilde(tChild)*(q_comb_tilde(times[i-1])/q_comb(times[i-1]) - q_comb_tilde(times[i])/q_comb(times[i]));
                     }
                 }
-//                System.out.println("qsum: " + qsum + " log " + Math.log(qsum));
+                // Add integral sum to likelihood.
                 logP += Math.log(qsum);
             }
         }
@@ -378,57 +406,46 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                         Node fossilParent = node.getParent();
                         if (height > 0.000000000005 || rho[totalIntervals-rate_index(height)-1] == 0.) {
                             logP += Math.log(p(height));
-//                            System.out.println("p(" + height+")");
                             if (tree.belongToSameSRange(i, fossilParent.getNr())) {
 //                                System.out.println("- q("+height+") at y");
-
-                                logP -=  log_q_comb_tilde(node.getHeight());
+                                logP -=  log_q_comb_tilde(height);
                             }
                             else {
 //                                System.out.println("- q("+height+") at x");
-
-                                logP -= log_q_comb(node.getHeight());
+                                logP -= log_q_comb(height);
 
                             }
                             logP += Math.log(psi[rate_index(height)]);
-//                            System.out.println("+ psi " + psi[rate_index(height)]);
-
-
                         } else {
                             logP += Math.log(rho[totalIntervals-rate_index(height)-1]);
-//                            System.out.println("+ rho " + rho[totalIntervals-rate_index(height)-1]);
-
                         }
                     }
 
                 } else {
-//                    if (node.isFake()) {
-//                        logP += Math.log(psi[rate_index(height)]);
-//                        System.out.println("+ psi " + psi[rate_index(height)]);
-//
-//                    } else {
-//                        logP += Math.log(birth[rate_index(height)]); // + log_q_comb(height);
-//                        System.out.println("+ birth " + birth[rate_index(height)]);
-//                        System.out.println("+ q(" + height+") at w");
-//                    }
-
                     if (node.isFake()) {
                         logP += Math.log(psi[rate_index(height)]);
                         Node parent = node.getParent();
                         Node child = node.getNonDirectAncestorChild();
                         Node DAchild = node.getDirectAncestorChild();
-                        if (parent != null && ((SRTree)tree).belongToSameSRange(parent.getNr(),DAchild.getNr())) {
-                            logP += - log_q_comb_tilde(node.getHeight()) + log_q_comb(node.getHeight());
+                        if (parent != null && tree.belongToSameSRange(parent.getNr(),DAchild.getNr())) {
+                            logP += - log_q_comb_tilde(height) + log_q_comb(height);
+//                            System.out.println("+ q("+node.getHeight()+")");
+//                            System.out.println("- q~("+node.getHeight()+")");
+
                         }
-                        if (child != null && ((SRTree)tree).belongToSameSRange(i,child.getNr())) {
-                            logP += - log_q_comb(node.getHeight()) +  log_q_comb_tilde(node.getHeight());
+                        if (child != null && tree.belongToSameSRange(i,child.getNr())) {
+                            logP += - log_q_comb(height) +  log_q_comb_tilde(height);
+//                            System.out.println("- q("+node.getHeight()+")");
+//                            System.out.println("+ q~("+node.getHeight()+")");
 
                         }
                     } else {
-                        logP += Math.log(birth[rate_index(height)]) + log_q_comb(height);
+                        logP += Math.log(birth[rate_index(height)]);
+                        logP += log_q_comb(height);
+//                        System.out.println("+ q("+height+")");
                     }
                 }
-                }
+        }
         return logP;
     }
 
