@@ -321,14 +321,16 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
             logP -= Math.log(1 - p(x0));
         }
 
+
         //TODO: reinstate with corrections?
-//        if (conditionOnRhoSamplingInput.get()) {
+//        if (conditionOnRhoSampling.get()) {
 //            if (conditionOnRootInput.get()) {
-//                logP -= Math.log(lambda) + log_oneMinusP0Hat(x1, c1, c2)+ log_oneMinusP0Hat(x1, c1, c2);
+//                logP -= Math.log(birth) + log_oneMinusP0Hat(x1, c1, c2)+ log_oneMinusP0Hat(x1, c1, c2);
 //            }  else {
 //                logP -= log_oneMinusP0Hat(x0, c1, c2);
 //            }
 //        }
+
         // integrate over fossils in the range. This seems to suggest that we take out the psi in the previous equations
         for (StratigraphicRange range : tree.getSRanges()) {
             Node first = tree.getNode(range.getNodeNrs().get(0));
@@ -407,11 +409,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                         if (height > 0.000000000005 || rho[totalIntervals-rate_index(height)-1] == 0.) {
                             logP += Math.log(p(height));
                             if (tree.belongToSameSRange(i, fossilParent.getNr())) {
-//                                System.out.println("- q("+height+") at y");
                                 logP -=  log_q_comb_tilde(height);
                             }
                             else {
-//                                System.out.println("- q("+height+") at x");
                                 logP -= log_q_comb(height);
 
                             }
@@ -429,20 +429,15 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                         Node DAchild = node.getDirectAncestorChild();
                         if (parent != null && tree.belongToSameSRange(parent.getNr(),DAchild.getNr())) {
                             logP += - log_q_comb_tilde(height) + log_q_comb(height);
-//                            System.out.println("+ q("+node.getHeight()+")");
-//                            System.out.println("- q~("+node.getHeight()+")");
 
                         }
                         if (child != null && tree.belongToSameSRange(i,child.getNr())) {
                             logP += - log_q_comb(height) +  log_q_comb_tilde(height);
-//                            System.out.println("- q("+node.getHeight()+")");
-//                            System.out.println("+ q~("+node.getHeight()+")");
 
                         }
                     } else {
                         logP += Math.log(birth[rate_index(height)]);
                         logP += log_q_comb(height);
-//                        System.out.println("+ q("+height+")");
                     }
                 }
         }
