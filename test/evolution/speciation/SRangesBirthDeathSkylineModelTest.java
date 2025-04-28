@@ -9,6 +9,8 @@ import junit.framework.TestCase;
 import org.junit.Test;
 import sr.evolution.sranges.StratigraphicRange;
 import ssr.speciation.SRangesBirthDeathSkylineModel;
+import ssr.speciation.OldSranges;
+
 
 
 import java.util.ArrayList;
@@ -60,6 +62,8 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("contemp", true);
         model.setInputValue("conditionOnSurvival", false);
         model.initAndValidate();
+        model.setInputValue("reverseTimeArrays", "true true true true true");
+
         double ans = model.calculateLogP();
         System.out.println(ans);
         assertEquals(-33.74668640318646, ans, 1e-9);
@@ -108,6 +112,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667"));
         model.setInputValue("contemp", true);
         model.setInputValue("conditionOnSurvival", false);
+        model.setInputValue("reverseTimeArrays", "true true true true true");
 
         model.initAndValidate();
         double ans = model.calculateLogP();
@@ -156,6 +161,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667"));
         model.setInputValue("contemp", true);
         model.setInputValue("conditionOnSurvival", false);
+        model.setInputValue("reverseTimeArrays", "true true true true true");
 
         model.initAndValidate();
         System.out.println(model.calculateLogP());
@@ -202,6 +208,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.6666666667 0.6 0.9756097561 0.7692307692"));
         model.setInputValue("contemp", true);
         model.setInputValue("conditionOnSurvival", false);
+        model.setInputValue("reverseTimeArrays", "true true true true true");
 
         model.initAndValidate();
         System.out.println(model.calculateLogP());
@@ -246,7 +253,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("samplingProportion", new RealParameter("0.6666666667 0.6 0.9756097561 0.7692307692 0.7692307692"));
         model.setInputValue("contemp", true);
         model.setInputValue("conditionOnSurvival", false);
-//        model.setInputValue("reverseTimeArrays", true);
+        model.setInputValue("reverseTimeArrays", "true true true true true");
 
 
         model.initAndValidate();
@@ -254,6 +261,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         System.out.println(ans);
         assertEquals(-24.68765411973161,ans , 1e-7);
     }
+
 
     @Test
     public void testLikelihoodSLargeTree() throws Exception {
@@ -351,6 +359,7 @@ public class SRangesBirthDeathSkylineModelTest extends TestCase {
         model.setInputValue("turnOver", new RealParameter("0.3333333333 0.3333333333 0.3333333333 0.3333333333 0.3333333333"));
         model.setInputValue("samplingProportion", new RealParameter("0.1666666667 0.1666666667 0.1666666667 0.1666666667 0.1666666667"));
         model.setInputValue("conditionOnSurvival", false);
+        model.setInputValue("reverseTimeArrays", "true true true true true");
 
         model.initAndValidate();
         double ans = model.calculateLogP();
