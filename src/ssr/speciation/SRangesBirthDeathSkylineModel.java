@@ -56,7 +56,9 @@ public class SRangesBirthDeathSkylineModel extends BirthDeathSkylineModel {
                     "as a proxy for this.");
         }
         super.initAndValidate();
-        super.transformParameters_d_r_s();
+        if ((netDiversification.get() != null || birthRate.get() != null) && turnOver.get() != null && samplingProportion.get() != null) {
+            super.transformParameters_d_r_s();
+        }
 
     }
 
