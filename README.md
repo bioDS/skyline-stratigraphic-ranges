@@ -1,4 +1,4 @@
-# sRanges
+# ssRanges
 
 - [Introduction](#introduction)
 - [Data](#data)
@@ -25,15 +25,17 @@ The following Beast2 packages are required as dependencies:
 Use `ant` to build packages in the following order: beast2, bdsky and beastLabs. 
 Then use `ant package` to build BeastFX, and `ant` to build the remaining dependencies (sampledancestors and stratigraphic-ranges).
 
-## Introduction - sRanges
+## Introduction - ssRanges
 
-sRanges is a BEAST2.7 package for performing phylodynamic inference under the birth-death stratigraphic ranges model. Depending on data interpretation it can be used for both macroevolution and epidemiology.
+ssRanges is a BEAST2.7 package for performing phylodynamic inference under the skyline birth-death stratigraphic ranges model. Depending on data interpretation it can be used for both macroevolution and epidemiology.
 
-THe dependencies on other BEAST2.7 packages can be found in `version.xml` file.
+It builds on the [sRanges](https://github.com/jugne/stratigraphic-ranges) package for the constant rate birth-death stratigraphic ranges model to support piecewise constant diversification rates
+
+The dependencies on other BEAST2.7 packages can be found in `version.xml` file.
 
 ## Data
 
-sRanges uses three types of data to inform the inference:
+ssRanges uses three types of data to inform the inference:
 
 - **Genetic sequence alignment**
 - **Morphological characters alignment**
@@ -43,7 +45,7 @@ Sampling at present and through time is allowed, as well as having sampled ances
 
 ## Output
 
-sRanges produces a posterior distribution of model parameters and oriented trees:
+ssRanges produces a posterior distribution of model parameters and oriented trees:
 
 - In the macroevolution case, they are interpreted as a budding speciation model, where each child of a node is either an ancestor or descendant species.
 - In epidemiology, they are transmission trees where each child of a node is either a donor or recipient.
@@ -76,7 +78,8 @@ Pull requests are welcome. If you have major suggestions, please discuss them be
 
 ## Acknowledgements
 
-The sRanges are developed by Alexandra (Sasha) Gavryushkina and Ugne Stolz. 
+The skyline extension to the constant rate model are developed by Kate Truman and Alexandra (Sasha) Gavryushkina.
+The [sRanges](https://github.com/jugne/stratigraphic-ranges) package this relies on is developed by Alexandra (Sasha) Gavryushkina and Ugne Stolz. 
 
 ## License
 
