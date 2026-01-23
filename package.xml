@@ -1,5 +1,5 @@
 <packages>
-    <package name="ssRanges" version="0.0.2" url="https://github.com/bioDS/skyline-stratigraphic-ranges/releases/download/v0.0.2/ssRanges.v0.0.2.zip" projectURL="https://github.com/bioDS/skyline-stratigraphic-ranges" description="Skyline Stratigraphic Ranges Fossilized Birth-death Model">
+    <package name="ssRanges" version="0.0.2" url="https://github.com/bioDS/skyline-stratigraphic-ranges/releases/download/v0.0.2/ssRanges.zip" projectURL="https://github.com/bioDS/skyline-stratigraphic-ranges" description="Skyline Stratigraphic Ranges Fossilized Birth-death Model">
         <depends on="BEAST.base" atleast="2.7.0"/>
         <depends on="BEAST.app" atleast="2.7.0"/>
         <depends on="BEASTLabs" atleast="2.0.0"/>
