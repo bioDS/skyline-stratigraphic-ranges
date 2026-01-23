@@ -3,9 +3,8 @@
         <depends on="BEAST.base" atleast="2.7.0"/>
         <depends on="BEAST.app" atleast="2.7.0"/>
         <depends on="BEASTLabs" atleast="2.0.0"/>
-        <depends on="SA" atleast="2.1.0"/>s
+        <depends on="SA" atleast="2.1.0"/>
         <depends on="bdsky" atleast="1.4.8"/>
         <depends on="MM" atleast="1.2.0"/>
     </package>
 </packages>
-s
