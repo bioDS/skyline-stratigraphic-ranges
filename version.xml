@@ -1,4 +1,4 @@
-<package name="SSRanges" version="0.0.1">
+<package name="SSRanges" version="0.0.2">
     <depends on="BEAST.base" atleast="2.7.0"/>
     <depends on="SRanges" atleast="0.0.4"/>
     <depends on="BEAST.app" atleast="2.7.0"/>
