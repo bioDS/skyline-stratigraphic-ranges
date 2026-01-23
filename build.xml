@@ -86,9 +86,9 @@
 
         <!-- Read package name and version from xml file -->
         <xmlproperty file="version.xml" prefix="fromVersionFile" />
-        <property name="projName" value="SRanges" />
+        <property name="projName" value="ssRanges" />
         <!--${fromVersionFile.package(name)} ${fromVersionFile.package(version)} -->
-        <property name="projVersion" value="0.03" />
+        <property name="projVersion" value="0.02" />
 <!--        <property name="projName" value="${fromVersionFile.package(name)}" />-->
 <!--        <property name="projVersion" value="${fromVersionFile.package(version)}" />-->
 
@@ -343,7 +343,7 @@
         <property name="build-sr" location="build-sr"/>
         <mkdir dir="${build-sr}"/>
 
-        <get src="https://github.com/jugne/stratigraphic-ranges/releases/download/v0.0.4/SRanges.v0.0.4.zip" dest="${build-sr}/sr.zip"/>
+        <get src="https://github.com/jugne/stratigraphic-ranges/releases/download/v0.0.4/SRanges.v0.1.0.zip" dest="${build-sr}/sr.zip"/>
         <unzip src="${build-sr}/sr.zip" dest="${build-sr}"/>
         <mkdir dir="${build-sr}/sr/build"/>
         <javac target="${targetVersion}" source="${sourceVersion}"
