@@ -88,7 +88,7 @@
         <xmlproperty file="version.xml" prefix="fromVersionFile" />
         <property name="projName" value="ssRanges" />
         <!--${fromVersionFile.package(name)} ${fromVersionFile.package(version)} -->
-        <property name="projVersion" value="0.02" />
+        <property name="projVersion" value="0.0.2" />
 <!--        <property name="projName" value="${fromVersionFile.package(name)}" />-->
 <!--        <property name="projVersion" value="${fromVersionFile.package(version)}" />-->
 
