@@ -52,7 +52,7 @@ ssRanges produces a posterior distribution of model parameters and oriented tree
 
 ## Usage
 
-You can install the latest release by adding the link https://raw.githubusercontent.com/jugne/stratigraphic-ranges/master/package.xml as a third party BEAST package repository in Beauti and installing the sRanges package that appears. 
+You can install the latest release by adding the link [https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml](https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml) as a third party BEAST package repository in Beauti and installing the ssRanges package that appears. 
 
 The Beauti template is currently not available. You can find examples of BEAST2 XML in the `examples` folder.
 
