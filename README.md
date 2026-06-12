@@ -27,9 +27,9 @@ Then use `ant package` to build BeastFX, and `ant` to build the remaining depend
 
 ## Introduction - ssRanges
 
-ssRanges is a BEAST2.7 package for performing phylodynamic inference under the skyline birth-death stratigraphic ranges model. Depending on data interpretation it can be used for both macroevolution and epidemiology.
+*ssRanges* is a BEAST2.7 package for performing phylodynamic inference under the skyline birth-death stratigraphic ranges model. Depending on data interpretation it can be used for both macroevolution and epidemiology.
 
-It builds on the [sRanges](https://github.com/jugne/stratigraphic-ranges) package for the constant rate birth-death stratigraphic ranges model to support piecewise constant diversification rates
+It builds on the [*sRanges*](https://github.com/jugne/stratigraphic-ranges) package for the constant rate birth-death stratigraphic ranges model to support piecewise constant diversification rates
 
 The dependencies on other BEAST2.7 packages can be found in `version.xml` file.
 
@@ -45,14 +45,17 @@ Sampling at present and through time is allowed, as well as having sampled ances
 
 ## Output
 
-ssRanges produces a posterior distribution of model parameters and oriented trees:
+*ssRanges* produces a posterior distribution of model parameters and oriented trees:
 
 - In the macroevolution case, they are interpreted as a budding speciation model, where each child of a node is either an ancestor or descendant species.
 - In epidemiology, they are transmission trees where each child of a node is either a donor or recipient.
 
+## Tree Summarization
+The TreeAnnotator tool from the *sRanges* package can be used to produce MCC trees. For more information, see the [*sRanges* documentation](https://github.com/jugne/stratigraphic-ranges?tab=readme-ov-file#tree-summarization).
+
 ## Usage
 
-You can install the latest release by adding the link [https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml](https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml) as a third party BEAST package repository in Beauti and installing the ssRanges package that appears. 
+You can install the latest release by adding the link [https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml](https://raw.githubusercontent.com/bioDS/skyline-stratigraphic-ranges/main/package.xml) as a third party BEAST package repository in Beauti and installing the *ssRanges* package that appears. 
 
 The Beauti template is currently not available. You can find examples of BEAST2 XML in the `examples` folder.
 
@@ -79,7 +82,7 @@ Pull requests are welcome. If you have major suggestions, please discuss them be
 ## Acknowledgements
 
 The skyline extension to the constant rate model are developed by Kate Truman and Alexandra (Sasha) Gavryushkina.
-The [sRanges](https://github.com/jugne/stratigraphic-ranges) package this relies on is developed by Alexandra (Sasha) Gavryushkina and Ugne Stolz. 
+The [*sRanges*](https://github.com/jugne/stratigraphic-ranges) package this relies on is developed by Alexandra (Sasha) Gavryushkina and Ugne Stolz. 
 
 ## License
 
